@@ -37,3 +37,9 @@ This is why `run_ansible.sh` exists.
 It is written by `terraform apply`. 
 It's just a handy way of shortening the dev loop, so you can apply the playbook without waiting for a whole VM rebuild.
 
+## TODO
+
+* serve static with nginx
+* serve on port 80 and port 8080
+* add database
+* make the flask app use the database
