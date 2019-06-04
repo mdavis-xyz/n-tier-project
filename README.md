@@ -28,4 +28,6 @@ The justification is:
 
 ## Usage
 
+* [install Terraform](https://www.terraform.io/downloads.html)
+
 TODO: fill out this section once code is written.
