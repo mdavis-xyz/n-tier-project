@@ -8,6 +8,7 @@
      nginx_user: www-data
      vassal_dir: /etc/uwsgi/vassals
      uwsgi_log_dir: /var/log/uwsgi/
+     uwsgi_service_name: uwsgi_emperor
 
   tasks:
 
@@ -89,8 +90,21 @@
           owner: "{{ nginx_user }}"
           group: "{{ nginx_group }}"
 
+     # this is for debugging
+     # so you can manually invoke what systemd would invoke
      - name: copy manual emperor script
        template:
           src: run_emperor.sh
           dest: "{{ app_dir }}/run_emperor.sh"
           mode: "+x"
+
+     - name: copy systemd service file
+       template:
+         src: emperor.service
+         dest: /etc/systemd/system/{{ uwsgi_service_name }}.service
+
+     - name: run systemd service for emperor
+       systemd:
+          name: "{{ uwsgi_service_name }}"
+          state: restarted # TODO: only restart when really needed
+          enabled: yes
