@@ -29,5 +29,11 @@ The justification is:
 ## Usage
 
 * [install Terraform](https://www.terraform.io/downloads.html)
+* run `terraform init`
+* run `./deploy.sh` (which is just `terraform apply ...`)
 
-TODO: fill out this section once code is written.
+If you are making changes to the ansible playbook, Terraform will not run the new playbook if you just do `terraform apply`.
+This is why `run_ansible.sh` exists. 
+It is written by `terraform apply`. 
+It's just a handy way of shortening the dev loop, so you can apply the playbook without waiting for a whole VM rebuild.
+

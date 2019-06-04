@@ -1,6 +1,8 @@
 # credentials/secrets
 creds/*
 
+# ansible
+*.retry
 
 # Local .terraform directories
 **/.terraform/*
