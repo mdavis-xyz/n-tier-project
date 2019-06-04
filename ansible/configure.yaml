@@ -1,6 +1,14 @@
 - hosts: all
   become: true
 
+  vars:
+     app_dir: /var/www/webapp
+     venv_path: "{{ app_dir }}/venv"
+     nginx_group: www-data
+     nginx_user: www-data
+     vassal_dir: /etc/uwsgi/vassals
+     uwsgi_log_dir: /var/log/uwsgi/
+
   tasks:
 
      - name: add nginx apt repo
@@ -14,22 +22,20 @@
              - nginx
              - python3
              - python3-pip
+             - tmux # convenience
+             - vim  # convenience
+             - build-essential
           state: present
           update_cache: yes
        become: yes
 
-     - name: start nginx
-       systemd:
-          name: nginx
-          state: started
-       become: yes
-
      # TODO: create non-root user
-     - name: create directories
+     - name: create app directory
        file:
-          path: /var/www/webapp
+          path: "{{ app_dir }}"
           state: directory
-       register: app_dir
+          owner: "{{ nginx_user }}"
+          group: "{{ nginx_group }}"
        become: yes
 
      - name: install virtualenv tool
@@ -41,13 +47,50 @@
        pip:
           name: 
             - flask
-          virtualenv: "{{ app_dir.path }}"
+            - uwsgi
+          virtualenv: "{{ venv_path }}"
           virtualenv_python: python3
 
      - name: copy python flask script over
        template:
           src: app.py
-          dest: "{{ app_dir.path }}/hello.py"
+          dest: "{{ app_dir }}/hello.py"
        register: flask_script
 
 
+     # nginx + flask guide: https://vladikk.com/2013/09/12/serving-flask-with-nginx-on-ubuntu/
+     # (with tweaks to template into jinja, and convert to systemd)
+     - name: disable default nginx page
+       file:
+          path: /etc/nginx/sites-enabled/default
+          state: absent
+
+     - name: create new nginx conf
+       template:
+          src: nginx.conf
+          dest: /etc/nginx/sites-available/hello.conf
+       register: nginx_conf
+
+     - name: enable new nginx conf
+       file: 
+         src: "{{ nginx_conf.dest }}"
+         dest: /etc/nginx/sites-enabled/hello.conf
+         state: link
+
+     - name: copy uwsgi conf
+       template:
+          src: app_uwsgi.ini
+          dest: "{{ app_dir }}/app_uwsgi.ini"
+
+     - name: create log dir for uwsgi
+       file:
+          path: /var/log/uwsgi
+          state: directory
+          owner: "{{ nginx_user }}"
+          group: "{{ nginx_group }}"
+
+     - name: copy manual emperor script
+       template:
+          src: run_emperor.sh
+          dest: "{{ app_dir }}/run_emperor.sh"
+          mode: "+x"
