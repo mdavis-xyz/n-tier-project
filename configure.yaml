@@ -1,8 +1,0 @@
-- hosts: all
-  become: true
-
-  tasks:
-    - name: check playbook works
-      file:
-        path: ansible-test.txt
-        state: touch

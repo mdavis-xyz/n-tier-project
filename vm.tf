@@ -18,18 +18,19 @@ resource "digitalocean_droplet" "vibrato-test" {
             "touch test-remote-exec.txt"
         ]
     }
+    # create local script with exact ansible args
     provisioner "local-exec" {
         # TODO: implement host key checking
         # TODO: factor out ssh username
-        command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u root --private-key ${var.pvt_key_path} -i '${digitalocean_droplet.vibrato-test.ipv4_address},' configure.yaml -e 'ansible_python_interpreter=/usr/bin/python3'"
+        command = "echo 'ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u root --private-key ${var.pvt_key_path} -i ${digitalocean_droplet.vibrato-test.ipv4_address}, configure.yaml -e ansible_python_interpreter=/usr/bin/python3' > ansible/run.sh && chmod +x ansible/run.sh"
+    }
+
+    # now run the playbook
+    provisioner "local-exec" {
+        command = "cd ansible; ./run.sh"
     }
 }
 
-resource "local_file" "run_ansible" {
-  # TODO: factor this out, only save it once
-  content = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u root --private-key ${var.pvt_key_path} -i '${digitalocean_droplet.vibrato-test.ipv4_address},' configure.yaml -e 'ansible_python_interpreter=/usr/bin/python3'"
-  filename = "run_ansible.sh"
-}
 output "ip" {
   value = digitalocean_droplet.vibrato-test.ipv4_address
 }

@@ -1,0 +1,53 @@
+- hosts: all
+  become: true
+
+  tasks:
+
+     - name: add nginx apt repo
+       apt_repository:
+          repo: ppa:nginx/stable
+       become: yes
+
+     - name: install dependencies, update apt
+       apt:
+          name:
+             - nginx
+             - python3
+             - python3-pip
+          state: present
+          update_cache: yes
+       become: yes
+
+     - name: start nginx
+       systemd:
+          name: nginx
+          state: started
+       become: yes
+
+     # TODO: create non-root user
+     - name: create directories
+       file:
+          path: /var/www/webapp
+          state: directory
+       register: app_dir
+       become: yes
+
+     - name: install virtualenv tool
+       pip:
+          name: virtualenv
+          executable: pip3
+
+     - name: create virtual env
+       pip:
+          name: 
+            - flask
+          virtualenv: "{{ app_dir.path }}"
+          virtualenv_python: python3
+
+     - name: copy python flask script over
+       template:
+          src: app.py
+          dest: "{{ app_dir.path }}/hello.py"
+       register: flask_script
+
+
