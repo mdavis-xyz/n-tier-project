@@ -1,5 +1,4 @@
 - hosts: all
-  become: true
 
   vars:
      app_dir: /var/www/webapp
@@ -12,7 +11,9 @@
      handler_function: serve
      python_file_base: index # no .py here
      database_name: web_data
-     sql_user: root # TODO: change
+     sql_user: root
+     sql_pass: "{{ lookup('file','../creds/sql_pass.txt') }}"
+     sql_host: localhost
      table_name: staff_info
 
   tasks:
@@ -28,10 +29,10 @@
              - nginx
              - python3
              - python3-pip
-             - mysql-server
              - tmux # convenience
              - vim  # convenience
              - build-essential # for WSGI (nginx-python)
+             - python3-mysqldb
           state: present
           update_cache: yes
        become: yes
@@ -75,6 +76,7 @@
           name: 
             - flask
             - uwsgi
+            - mysql-connector
           virtualenv: "{{ venv_path }}"
           virtualenv_python: python3
 
@@ -158,8 +160,74 @@
           - content
           - dynamic_content
 
-     - name: copy over mysql init script
+     - name: install mysql
+       apt:
+          name: mysql-server
+       register: mysql_apt
+       tags:
+          - db_init
 
+     - name: change mysql password
+       # TODO? when: mysql_apt is changed
+       mysql_user:
+          name: "{{ sql_user }}"
+          host: localhost
+          password: "{{ sql_pass }}"
+          login_password: "{{ sql_pass }}"
+          login_host: localhost
+       tags:
+          - db_init
+
+     - name: copy .my.cnf file over
+       template:
+          src: my.cnf
+          dest: "{{ item }}"
+          owner: "{{ sql_user }}"
+          mode: "600"
+       with_items:
+          - /etc/mysql/.my.cnf
+          - /root/.my.cnf # TODO: account for users in /home
+       tags:
+          - db_init
+
+     - name: update mysql root password for all root accounts
+       mysql_user: 
+          name: "{{ sql_user }}"
+          host: "{{ item }}"
+          password: "{{ sql_pass }}"
+          login_password: "{{ sql_pass }}"
+          login_host: localhost
+       with_items:
+        - "{{ ansible_hostname }}"
+        - 127.0.0.1
+        - ::1
+       tags:
+          - db_init
+
+
+     - name: ensure anonymous users are not in the database
+       mysql_user: 
+          name: '' 
+          host: "{{ item }}" 
+          state: absent
+          login_password: "{{ sql_pass }}"
+          login_host: localhost
+       with_items:
+        - localhost
+        - "{{ inventory_hostname }}"
+        - 127.0.0.1
+        - ::1
+       tags:
+          - db_init
+
+     - name: remove the test database
+       mysql_db: 
+          name: test
+          state: absent
+       tags:
+          - db_init
+
+     - name: copy over mysql init script
        template:
          src: database_init.sql
          dest: /tmp/database_init.sql
@@ -183,3 +251,7 @@
 #       tags:
 #         - db_init
 
+     - name: copy over troubleshooting guide
+       template:
+          src: troubleshooting.md
+          dest: troubleshooting.md

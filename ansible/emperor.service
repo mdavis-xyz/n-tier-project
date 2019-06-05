@@ -3,7 +3,7 @@ Description=uWSGI Emperor
 After=syslog.target
 
 [Service]
-ExecStart={{ venv_path }}/bin/uwsgi --master --emperor {{ vassal_dir }} --die-on-term --uid {{ nginx_user }} --gid {{ nginx_group }} 
+ExecStart={{ venv_path }}/bin/uwsgi --master --emperor {{ vassal_dir }} --die-on-term --uid {{ nginx_user }} --gid {{ nginx_group }} --logto {{ uwsgi_log_dir }}/emperor.log
 RuntimeDirectory=uwsgi
 Restart=always
 Type=notify
