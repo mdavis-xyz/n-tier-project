@@ -5,11 +5,11 @@ app = Flask(__name__)
 @app.route("/dynamic")
 def {{ handler_function }}():
     data = [
-      {'firstName':'Matthew',
-       'lastName': 'Davis'
+      {'first_name':'Matthew',
+       'last_name': 'Davis'
       },
-      {'firstName':'John',
-       'lastName': 'Smith'
+      {'first_name':'John',
+       'last_name': 'Smith'
       },
             ]
     return(jsonify(data))
