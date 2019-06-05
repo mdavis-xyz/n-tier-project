@@ -1,1 +1,4 @@
-window.addEventListener("load",function() {alert('script loaded')},false);
+// window.addEventListener("load",function() {alert('script loaded')},false);
+function fetchData(){
+   alert("button clicked");
+}
