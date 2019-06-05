@@ -37,7 +37,7 @@ h1 {
   box-shadow: 0 4px 10px 0 rgba(0,0,0,0.2);
   transition: 0.3s;
   width: 20rem;
-  margin: 2rem;
+  margin: 0.5rem;
   background: rgb(63,67,74);
   border-radius: 0.2em;
   max-width: 90vw;
@@ -96,3 +96,30 @@ button:active {
    box-shadow: 0 0px 16px 0 rgba(0,0,0,0.4);
    text-decoration: none;
 }
+
+
+.appear {
+   position: relative;
+   -webkit-animation: appear 0.6s forwards;
+   animation: appear 0.6s forwards;
+   transition-timing-function: ease;
+}
+
+@keyframes appear {
+   0% { top: 16px ; opacity: 0}
+   100% { top: 0px ; opacity: 1}
+}
+
+@-webkit-keyframes appear {
+   0% { top: 16px ; opacity: 0}
+   100% { top: 0px ; opacity: 1}
+}
+
+.firstName {
+
+}
+
+.lastName {
+   font-weight: bold;
+}
+

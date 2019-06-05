@@ -9,6 +9,8 @@
      vassal_dir: /etc/uwsgi/vassals
      uwsgi_log_dir: /var/log/uwsgi/
      uwsgi_service_name: uwsgi_emperor
+     handler_function: serve
+     python_file_base: index # no .py here
 
   tasks:
 
@@ -40,10 +42,12 @@
           recurse: yes
        become: yes
        with_items:
+          - "{{ app_dir }}"
           - "{{ app_dir }}/static"
-          - "{{ app_dir }}/dynamic"
        tags:
           - static_content
+          - dynamic_content
+          - content
 
      - name: copy static files over
        template:
@@ -55,6 +59,7 @@
           - script.js
        tags:
           - static_content
+          - content
 
      - name: install virtualenv tool
        pip:
@@ -73,9 +78,11 @@
      - name: copy python flask script over
        template:
           src: app.py
-          dest: "{{ app_dir }}/dynamic/hello.py"
+          dest: "{{ app_dir }}/{{ python_file_base }}.py"
        register: flask_script
-
+       tags:
+          - content
+          - dynamic_content
 
      # nginx + flask guide: https://vladikk.com/2013/09/12/serving-flask-with-nginx-on-ubuntu/
      # (with tweaks to template into jinja, and convert to systemd)
@@ -143,5 +150,8 @@
        with_items:
           - "{{ uwsgi_service_name }}"
           - nginx
+       tags:
+          - content
+          - dynamic_content
 
 
