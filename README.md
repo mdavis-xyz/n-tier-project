@@ -57,10 +57,18 @@ The justification is:
 * [install Terraform](https://www.terraform.io/downloads.html)
 * Install Ansible (`apt-get install ansible`)
 * run `terraform init`
-* create a Digital Ocean API key, save it in `creds/do.txt` (which is excluded with `.gitignore`)
+* create a Digital Ocean API key
+   * from the Digital Ocean console, click on "API" on the left
+   * click "Generate New Token"
+   * save it in `creds/do.txt` (which is excluded with `.gitignore`)
+* set up your ssh key
+   * add your public ssh key to Digital Ocean
+   * get the md5 hash of your public key with `ssh-keygen -E md5 -lf ~/.ssh/id_rsa.pub | awk '{print $2}'`
+   * save that (without the `md5:`) to variable `ssh_fingerprint` inside `terraform.tfvars`
 * create a file `creds/sql_pass.txt` which is a password to be used for SQL on the server. (Yes, bad practice I know. But there's a short time limit for this task. Of course I'd do proper secret storage as the next step.)
-* run `./deploy.sh` (which is just `terraform apply ...` with the right arguments for credentials)
+* run `terraform apply -var do_token=$(cat creds/do.txt)` (or `./deploy.sh`)
 * that command prints out an IP address at the end. Visit that address in your browser.
+* to destroy, run `terraform destroy -var do_token=$(cat creds/do.txt)` ( or `./destroy.sh`)
 
 If you are making changes to the ansible playbook, Terraform will not run the new playbook if you just do `terraform apply`.
 This is why `run_ansible.sh` exists. 
