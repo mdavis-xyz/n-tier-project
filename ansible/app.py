@@ -14,17 +14,20 @@ def serve():
 def fetchFromDB():
 
     mydb = mysql.connector.connect(
-        host="{{ sql_host }}",
-        user="{{ sql_user }}",
-        passwd="{{ sql_pass }}", # TODO: figure out a better way to handle secrets
-        database="{{ database_name }}"
+        host="localhost",
+        user="root",
+        passwd="tuesdayVibratoLesson3Bar", # TODO: figure out a better way to handle secrets
+        database="web_data"
     )
 
     
     mycursor = mydb.cursor()
 
-    keys = ('first_name','last_name')
-    mycursor.execute("SELECT %s FROM {{ table_name }}" % ", ".join(keys))
+    # must spell out keys this way
+    # not select *, because the return value is a string with no
+    # column names
+    keys = ('first_name','last_name','job_title')
+    mycursor.execute("SELECT %s FROM staff_info" % ", ".join(keys))
 
     myresult = mycursor.fetchall()
     data = []

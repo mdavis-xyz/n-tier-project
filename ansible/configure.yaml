@@ -15,7 +15,7 @@
      sql_pass: "{{ lookup('file','../creds/sql_pass.txt') }}"
      sql_host: localhost
      table_name: staff_info
-
+     staff_data: "{{ lookup('file','data.json') | from_json }}"
   tasks:
 
      - name: add nginx apt repo
@@ -234,6 +234,14 @@
        register: db_init_script
        tags:
           - db_init
+          - db_init_data
+
+     - name: print out data
+       debug:
+          var: staff_data
+       tags:
+          - db_init
+          - db_init_data
 
      # there is an ansible module for this
      # but it seems to be unable to detect the required dependencies
@@ -243,6 +251,7 @@
        shell: mysql -u {{ sql_user }} < {{ db_init_script.dest }}
        tags:
          - db_init
+         - db_init_data
 #     - name: initialise mysql database
 #       mysql_db:
 #         state: import

@@ -115,11 +115,18 @@ button:active {
    100% { top: 0px ; opacity: 1}
 }
 
-.firstName {
+.first_name {
 
 }
 
-.lastName {
+.last_name {
    font-weight: bold;
 }
 
+.job_title {
+   font-size: 80%;
+}
+
+.center {
+   text-align: center;
+}
