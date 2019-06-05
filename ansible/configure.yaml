@@ -33,11 +33,28 @@
      # TODO: create non-root user
      - name: create app directory
        file:
-          path: "{{ app_dir }}"
+          path: "{{ item }}"
           state: directory
           owner: "{{ nginx_user }}"
           group: "{{ nginx_group }}"
+          recurse: yes
        become: yes
+       with_items:
+          - "{{ app_dir }}/static"
+          - "{{ app_dir }}/dynamic"
+       tags:
+          - static_content
+
+     - name: copy static files over
+       template:
+          src: "static/{{ item }}"
+          dest: "{{ app_dir }}/static/{{ item }}"
+       with_items:
+          - index.html
+          - styles.css
+          - script.js
+       tags:
+          - static_content
 
      - name: install virtualenv tool
        pip:
@@ -52,10 +69,11 @@
           virtualenv: "{{ venv_path }}"
           virtualenv_python: python3
 
+
      - name: copy python flask script over
        template:
           src: app.py
-          dest: "{{ app_dir }}/hello.py"
+          dest: "{{ app_dir }}/dynamic/hello.py"
        register: flask_script
 
 
@@ -82,6 +100,7 @@
        template:
           src: app_uwsgi.ini
           dest: "{{ app_dir }}/app_uwsgi.ini"
+       register: uwsgi_ini
 
      - name: create log dir for uwsgi
        file:
@@ -89,6 +108,18 @@
           state: directory
           owner: "{{ nginx_user }}"
           group: "{{ nginx_group }}"
+
+     - name: make vassals dir
+       file:
+          path: "{{ vassal_dir }}"
+          state: directory
+       # TODO ownership of this dir?
+
+     - name: create link so app is a vassal
+       file:
+          src: "{{ uwsgi_ini.dest }}"
+          dest: "{{ vassal_dir }}/app_uwsgi.ini"
+          state: link
 
      # this is for debugging
      # so you can manually invoke what systemd would invoke
@@ -103,8 +134,14 @@
          src: emperor.service
          dest: /etc/systemd/system/{{ uwsgi_service_name }}.service
 
-     - name: run systemd service for emperor
+     - name: run systemd service for emperor and nginx
        systemd:
-          name: "{{ uwsgi_service_name }}"
+          name: "{{ item }}"
           state: restarted # TODO: only restart when really needed
           enabled: yes
+
+       with_items:
+          - "{{ uwsgi_service_name }}"
+          - nginx
+
+
