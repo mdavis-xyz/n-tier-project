@@ -55,6 +55,7 @@ The justification is:
 ## Usage
 
 * [install Terraform](https://www.terraform.io/downloads.html)
+* Install Ansible (`apt-get install ansible`)
 * run `terraform init`
 * create a Digital Ocean API key, save it in `creds/do.txt` (which is excluded with `.gitignore`)
 * create a file `creds/sql_pass.txt` which is a password to be used for SQL on the server. (Yes, bad practice I know. But there's a short time limit for this task. Of course I'd do proper secret storage as the next step.)
