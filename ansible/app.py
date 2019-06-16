@@ -16,7 +16,7 @@ def fetchFromDB():
     mydb = mysql.connector.connect(
         host="localhost",
         user="root",
-        passwd="tuesdayVibratoLesson3Bar", # TODO: figure out a better way to handle secrets
+        passwd="{{ sql_pass }}", # TODO: figure out a better way to handle secrets
         database="web_data"
     )
 

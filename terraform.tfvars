@@ -1,5 +1,5 @@
 pub_key_path = "~/.ssh/id_rsa.pub"
 pvt_key_path = "~/.ssh/id_rsa"
-ssh_fingerprint = "04:ce:71:63:c5:98:05:67:f6:57:b5:80:8c:63:01:22"
+ssh_fingerprint = "eb:db:70:94:d6:0e:1c:74:76:0b:81:7e:86:db:a4:ae"
 
 
